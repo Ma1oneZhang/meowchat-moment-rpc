@@ -26,7 +26,7 @@ func NewRetrieveMomentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Re
 }
 
 func (l *RetrieveMomentLogic) RetrieveMoment(in *pb.RetrieveMomentReq) (*pb.RetrieveMomentResp, error) {
-	data, err := l.svcCtx.MomentModel.FindOneValid(l.ctx, in.MomentId)
+	data, err := l.svcCtx.MomentModel.FindOne(l.ctx, in.MomentId)
 	switch err {
 	case nil:
 	case model.ErrNotFound:

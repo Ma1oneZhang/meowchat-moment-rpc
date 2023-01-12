@@ -24,7 +24,7 @@ func NewListMomentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListMo
 }
 
 func (l *ListMomentLogic) ListMoment(in *pb.ListMomentReq) (*pb.ListMomentResp, error) {
-	data, err := l.svcCtx.MomentModel.FindManyValid(l.ctx, in.CommunityId, in.Count, in.Skip)
+	data, err := l.svcCtx.MomentModel.FindMany(l.ctx, in.CommunityId, in.Count, in.Skip)
 	if err != nil {
 		return nil, err
 	}

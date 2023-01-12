@@ -30,10 +30,7 @@ type (
 	// and implement the added methods in customMomentModel.
 	MomentModel interface {
 		momentModel
-		DeleteSoftly(ctx context.Context, id string) error
-		FindOneValid(ctx context.Context, id string) (*Moment, error)
-		FindManyValid(ctx context.Context, id string, count, skip int64) ([]*Moment, error)
-		UpdateValid(ctx context.Context, data *Moment) error
+		FindMany(ctx context.Context, id string, count, skip int64) ([]*Moment, error)
 		Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, error)
 	}
 
@@ -63,34 +60,7 @@ func NewMomentModel(url, db string, c cache.CacheConf, es config.ElasticsearchCo
 	}
 }
 
-func (m *customMomentModel) DeleteSoftly(ctx context.Context, id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return ErrInvalidObjectId
-	}
-	key := prefixMomentCacheKey + id
-	_, err = m.conn.UpdateOne(ctx, key, bson.M{"_id": oid, "isDeleted": false}, bson.M{"$set": bson.M{
-		"isDeleted": true,
-		"deleteAt":  time.Now(),
-	}})
-	return err
-}
-
-func (m *customMomentModel) FindOneValid(ctx context.Context, id string) (*Moment, error) {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, ErrInvalidObjectId
-	}
-	key := prefixMomentCacheKey + id
-	var data Moment
-	err = m.conn.FindOne(ctx, key, &data, bson.M{"_id": oid, "isDeleted": false})
-	if err != nil {
-		return nil, err
-	}
-	return &data, err
-}
-
-func (m *customMomentModel) FindManyValid(ctx context.Context, communityId string, count, skip int64) ([]*Moment, error) {
+func (m *customMomentModel) FindMany(ctx context.Context, communityId string, count, skip int64) ([]*Moment, error) {
 	oid, err := primitive.ObjectIDFromHex(communityId)
 	if err != nil {
 		return nil, ErrInvalidObjectId
@@ -99,19 +69,13 @@ func (m *customMomentModel) FindManyValid(ctx context.Context, communityId strin
 	opt := &options.FindOptions{
 		Skip:  &skip,
 		Limit: &count,
+		Sort:  bson.M{"createAt": -1},
 	}
-	err = m.conn.Find(ctx, &data, bson.M{"communityId": oid, "isDeleted": false}, opt)
+	err = m.conn.Find(ctx, &data, bson.M{"communityId": oid}, opt)
 	if err != nil {
 		return nil, err
 	}
 	return data, err
-}
-
-func (m *customMomentModel) UpdateValid(ctx context.Context, data *Moment) error {
-	data.UpdateAt = time.Now()
-	key := prefixMomentCacheKey + data.ID.Hex()
-	_, err := m.conn.UpdateOne(ctx, key, bson.M{"_id": data.ID, "isDeleted": false}, bson.M{"$set": data})
-	return err
 }
 
 func (m *customMomentModel) Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, error) {
@@ -134,13 +98,11 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 						},
 					},
 				},
-				"filter": []any{
-					map[string]any{
-						"term": map[string]any{
-							"isDeleted": false,
-						},
-					},
-				},
+			},
+		},
+		"sort": map[string]any{
+			"createAt": map[string]any{
+				"order": "desc",
 			},
 		},
 	}

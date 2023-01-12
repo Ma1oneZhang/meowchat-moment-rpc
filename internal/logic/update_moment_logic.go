@@ -31,7 +31,7 @@ func (l *UpdateMomentLogic) UpdateMoment(in *pb.UpdateMomentReq) (*pb.UpdateMome
 		return nil, errorx.ErrInvalidObjectId
 	}
 
-	err = l.svcCtx.MomentModel.UpdateValid(l.ctx, &model.Moment{
+	err = l.svcCtx.MomentModel.Update(l.ctx, &model.Moment{
 		ID:          momentId,
 		CatId:       m.CatId,
 		CommunityId: m.CommunityId,
@@ -39,7 +39,6 @@ func (l *UpdateMomentLogic) UpdateMoment(in *pb.UpdateMomentReq) (*pb.UpdateMome
 		Title:       m.Title,
 		Text:        m.Text,
 		UserId:      m.UserId,
-		IsDeleted:   false,
 	})
 	if err != nil {
 		return nil, err
