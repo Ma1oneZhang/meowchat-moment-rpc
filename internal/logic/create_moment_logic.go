@@ -25,9 +25,12 @@ func NewCreateMomentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Crea
 func (l *CreateMomentLogic) CreateMoment(in *pb.CreateMomentReq) (*pb.CreateMomentResp, error) {
 	m := in.Moment
 	data := &model.Moment{
-		Photos: m.Photos,
-		Title:  m.Title,
-		Text:   m.Text,
+		Photos:      m.Photos,
+		Title:       m.Title,
+		Text:        m.Text,
+		CommunityId: m.CommunityId,
+		UserId:      m.UserId,
+		CatId:       m.CatId,
 	}
 
 	err := l.svcCtx.MomentModel.Insert(l.ctx, data)
