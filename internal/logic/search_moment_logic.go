@@ -24,7 +24,7 @@ func NewSearchMomentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Sear
 }
 
 func (l *SearchMomentLogic) SearchMoment(in *pb.SearchMomentReq) (*pb.SearchMomentResp, error) {
-	data, err := l.svcCtx.MomentModel.Search(l.ctx, in.CommunityId, in.Keyword, in.Count, in.Skip)
+	data, total, err := l.svcCtx.MomentModel.Search(l.ctx, in.CommunityId, in.Keyword, in.Count, in.Skip)
 	if err != nil {
 		return nil, err
 	}
@@ -42,5 +42,5 @@ func (l *SearchMomentLogic) SearchMoment(in *pb.SearchMomentReq) (*pb.SearchMome
 		}
 		res = append(res, m)
 	}
-	return &pb.SearchMomentResp{Moments: res}, nil
+	return &pb.SearchMomentResp{Moments: res, Total: total}, nil
 }

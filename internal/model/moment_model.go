@@ -30,8 +30,8 @@ type (
 	// and implement the added methods in customMomentModel.
 	MomentModel interface {
 		momentModel
-		FindMany(ctx context.Context, id string, count, skip int64) ([]*Moment, error)
-		Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, error)
+		FindMany(ctx context.Context, id string, count, skip int64) ([]*Moment, int64, error)
+		Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, int64, error)
 	}
 
 	customMomentModel struct {
@@ -60,7 +60,7 @@ func NewMomentModel(url, db string, c cache.CacheConf, es config.ElasticsearchCo
 	}
 }
 
-func (m *customMomentModel) FindMany(ctx context.Context, communityId string, count, skip int64) ([]*Moment, error) {
+func (m *customMomentModel) FindMany(ctx context.Context, communityId string, count, skip int64) ([]*Moment, int64, error) {
 	data := make([]*Moment, 0, 20)
 	opt := &options.FindOptions{
 		Skip:  &skip,
@@ -69,12 +69,16 @@ func (m *customMomentModel) FindMany(ctx context.Context, communityId string, co
 	}
 	err := m.conn.Find(ctx, &data, bson.M{"communityId": communityId}, opt)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return data, err
+	total, err := m.conn.CountDocuments(ctx, bson.M{"communityId": communityId})
+	if err != nil {
+		return nil, 0, err
+	}
+	return data, total, err
 }
 
-func (m *customMomentModel) Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, error) {
+func (m *customMomentModel) Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, int64, error) {
 	search := m.es.Search
 	query := map[string]any{
 		"from": skip,
@@ -105,7 +109,7 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	res, err := search(
 		search.WithIndex(MomentIndexName),
@@ -113,14 +117,14 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 		search.WithBody(&buf),
 	)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
 		var e map[string]interface{}
 		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
-			return nil, err
+			return nil, 0, err
 		} else {
 			logx.Errorf("[%s] %s: %s",
 				res.Status(),
@@ -131,32 +135,33 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 	}
 	var r map[string]any
 	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	hits := r["hits"].(map[string]any)["hits"].([]any)
+	total := int64(r["hits"].(map[string]any)["total"].(map[string]any)["value"].(float64))
 	moments := make([]*Moment, 0, 10)
 	for i := range hits {
 		hit := hits[i].(map[string]any)
 		moment := &Moment{}
 		source := hit["_source"].(map[string]any)
 		if source["createAt"], err = time.Parse("2006-01-02T15:04:05Z07:00", source["createAt"].(string)); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		if source["updateAt"], err = time.Parse("2006-01-02T15:04:05Z07:00", source["updateAt"].(string)); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		hit["_source"] = source
 		err := mapstructure.Decode(hit["_source"], moment)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		oid := hit["_id"].(string)
 		id, err := primitive.ObjectIDFromHex(oid)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		moment.ID = id
 		moments = append(moments, moment)
 	}
-	return moments, nil
+	return moments, total, nil
 }
