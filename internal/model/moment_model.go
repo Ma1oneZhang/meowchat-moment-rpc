@@ -61,17 +61,13 @@ func NewMomentModel(url, db string, c cache.CacheConf, es config.ElasticsearchCo
 }
 
 func (m *customMomentModel) FindMany(ctx context.Context, communityId string, count, skip int64) ([]*Moment, error) {
-	oid, err := primitive.ObjectIDFromHex(communityId)
-	if err != nil {
-		return nil, ErrInvalidObjectId
-	}
 	data := make([]*Moment, 0, 20)
 	opt := &options.FindOptions{
 		Skip:  &skip,
 		Limit: &count,
 		Sort:  bson.M{"createAt": -1},
 	}
-	err = m.conn.Find(ctx, &data, bson.M{"communityId": oid}, opt)
+	err := m.conn.Find(ctx, &data, bson.M{"communityId": communityId}, opt)
 	if err != nil {
 		return nil, err
 	}
