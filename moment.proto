@@ -38,6 +38,17 @@ message ListMomentResp {
   int64 total = 2;
 }
 
+message ListMomentByUserIdReq {
+  string userId = 1;
+  int64 count = 2; // 获取的数量
+  int64 skip = 3;
+}
+
+message ListMomentByUserIdResp {
+  repeated Moment moments = 1;
+  int64 total = 2;
+}
+
 message RetrieveMomentReq {
   string momentId = 1;
 }
@@ -71,6 +82,7 @@ message DeleteMomentResp {
 service moment_rpc {
   rpc SearchMoment(SearchMomentReq) returns (SearchMomentResp);
   rpc ListMoment(ListMomentReq) returns (ListMomentResp);
+  rpc ListMomentByUserId(ListMomentByUserIdReq) returns (ListMomentByUserIdResp);
   rpc RetrieveMoment(RetrieveMomentReq) returns (RetrieveMomentResp);
   rpc CreateMoment(CreateMomentReq) returns (CreateMomentResp);
   rpc UpdateMoment(UpdateMomentReq) returns (UpdateMomentResp);

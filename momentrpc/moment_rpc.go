@@ -13,23 +13,26 @@ import (
 )
 
 type (
-	CreateMomentReq    = pb.CreateMomentReq
-	CreateMomentResp   = pb.CreateMomentResp
-	DeleteMomentReq    = pb.DeleteMomentReq
-	DeleteMomentResp   = pb.DeleteMomentResp
-	ListMomentReq      = pb.ListMomentReq
-	ListMomentResp     = pb.ListMomentResp
-	Moment             = pb.Moment
-	RetrieveMomentReq  = pb.RetrieveMomentReq
-	RetrieveMomentResp = pb.RetrieveMomentResp
-	SearchMomentReq    = pb.SearchMomentReq
-	SearchMomentResp   = pb.SearchMomentResp
-	UpdateMomentReq    = pb.UpdateMomentReq
-	UpdateMomentResp   = pb.UpdateMomentResp
+	CreateMomentReq        = pb.CreateMomentReq
+	CreateMomentResp       = pb.CreateMomentResp
+	DeleteMomentReq        = pb.DeleteMomentReq
+	DeleteMomentResp       = pb.DeleteMomentResp
+	ListMomentByUserIdReq  = pb.ListMomentByUserIdReq
+	ListMomentByUserIdResp = pb.ListMomentByUserIdResp
+	ListMomentReq          = pb.ListMomentReq
+	ListMomentResp         = pb.ListMomentResp
+	Moment                 = pb.Moment
+	RetrieveMomentReq      = pb.RetrieveMomentReq
+	RetrieveMomentResp     = pb.RetrieveMomentResp
+	SearchMomentReq        = pb.SearchMomentReq
+	SearchMomentResp       = pb.SearchMomentResp
+	UpdateMomentReq        = pb.UpdateMomentReq
+	UpdateMomentResp       = pb.UpdateMomentResp
 
 	MomentRpc interface {
 		SearchMoment(ctx context.Context, in *SearchMomentReq, opts ...grpc.CallOption) (*SearchMomentResp, error)
 		ListMoment(ctx context.Context, in *ListMomentReq, opts ...grpc.CallOption) (*ListMomentResp, error)
+		ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentByUserIdResp, error)
 		RetrieveMoment(ctx context.Context, in *RetrieveMomentReq, opts ...grpc.CallOption) (*RetrieveMomentResp, error)
 		CreateMoment(ctx context.Context, in *CreateMomentReq, opts ...grpc.CallOption) (*CreateMomentResp, error)
 		UpdateMoment(ctx context.Context, in *UpdateMomentReq, opts ...grpc.CallOption) (*UpdateMomentResp, error)
@@ -55,6 +58,11 @@ func (m *defaultMomentRpc) SearchMoment(ctx context.Context, in *SearchMomentReq
 func (m *defaultMomentRpc) ListMoment(ctx context.Context, in *ListMomentReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
 	client := pb.NewMomentRpcClient(m.cli.Conn())
 	return client.ListMoment(ctx, in, opts...)
+}
+
+func (m *defaultMomentRpc) ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentByUserIdResp, error) {
+	client := pb.NewMomentRpcClient(m.cli.Conn())
+	return client.ListMomentByUserId(ctx, in, opts...)
 }
 
 func (m *defaultMomentRpc) RetrieveMoment(ctx context.Context, in *RetrieveMomentReq, opts ...grpc.CallOption) (*RetrieveMomentResp, error) {

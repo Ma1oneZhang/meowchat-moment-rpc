@@ -32,6 +32,11 @@ func (s *MomentRpcServer) ListMoment(ctx context.Context, in *pb.ListMomentReq) 
 	return l.ListMoment(in)
 }
 
+func (s *MomentRpcServer) ListMomentByUserId(ctx context.Context, in *pb.ListMomentByUserIdReq) (*pb.ListMomentByUserIdResp, error) {
+	l := logic.NewListMomentByUserIdLogic(ctx, s.svcCtx)
+	return l.ListMomentByUserId(in)
+}
+
 func (s *MomentRpcServer) RetrieveMoment(ctx context.Context, in *pb.RetrieveMomentReq) (*pb.RetrieveMomentResp, error) {
 	l := logic.NewRetrieveMomentLogic(ctx, s.svcCtx)
 	return l.RetrieveMoment(in)

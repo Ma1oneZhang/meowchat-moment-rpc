@@ -9,26 +9,26 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type ListMomentLogic struct {
+type ListMomentByUserIdLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewListMomentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListMomentLogic {
-	return &ListMomentLogic{
+func NewListMomentByUserIdLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListMomentByUserIdLogic {
+	return &ListMomentByUserIdLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-func (l *ListMomentLogic) ListMoment(in *pb.ListMomentReq) (*pb.ListMomentResp, error) {
-	data, total, err := l.svcCtx.MomentModel.FindManyByCommunityId(l.ctx, in.CommunityId, in.Count, in.Skip)
+func (l *ListMomentByUserIdLogic) ListMomentByUserId(in *pb.ListMomentByUserIdReq) (*pb.ListMomentByUserIdResp, error) {
+	data, total, err := l.svcCtx.MomentModel.FindManyByUserId(l.ctx, in.UserId, in.Count, in.Skip)
 	if err != nil {
 		return nil, err
 	}
-	res := make([]*pb.Moment, 0, 20)
+	res := make([]*pb.Moment, 0)
 	for _, d := range data {
 		m := &pb.Moment{
 			Id:          d.ID.Hex(),
@@ -42,5 +42,5 @@ func (l *ListMomentLogic) ListMoment(in *pb.ListMomentReq) (*pb.ListMomentResp, 
 		}
 		res = append(res, m)
 	}
-	return &pb.ListMomentResp{Moments: res, Total: total}, nil
+	return &pb.ListMomentByUserIdResp{Moments: res, Total: total}, nil
 }

@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type MomentRpcClient interface {
 	SearchMoment(ctx context.Context, in *SearchMomentReq, opts ...grpc.CallOption) (*SearchMomentResp, error)
 	ListMoment(ctx context.Context, in *ListMomentReq, opts ...grpc.CallOption) (*ListMomentResp, error)
+	ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentByUserIdResp, error)
 	RetrieveMoment(ctx context.Context, in *RetrieveMomentReq, opts ...grpc.CallOption) (*RetrieveMomentResp, error)
 	CreateMoment(ctx context.Context, in *CreateMomentReq, opts ...grpc.CallOption) (*CreateMomentResp, error)
 	UpdateMoment(ctx context.Context, in *UpdateMomentReq, opts ...grpc.CallOption) (*UpdateMomentResp, error)
@@ -50,6 +51,15 @@ func (c *momentRpcClient) SearchMoment(ctx context.Context, in *SearchMomentReq,
 func (c *momentRpcClient) ListMoment(ctx context.Context, in *ListMomentReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
 	out := new(ListMomentResp)
 	err := c.cc.Invoke(ctx, "/moment.moment_rpc/ListMoment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *momentRpcClient) ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentByUserIdResp, error) {
+	out := new(ListMomentByUserIdResp)
+	err := c.cc.Invoke(ctx, "/moment.moment_rpc/ListMomentByUserId", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +108,7 @@ func (c *momentRpcClient) DeleteMoment(ctx context.Context, in *DeleteMomentReq,
 type MomentRpcServer interface {
 	SearchMoment(context.Context, *SearchMomentReq) (*SearchMomentResp, error)
 	ListMoment(context.Context, *ListMomentReq) (*ListMomentResp, error)
+	ListMomentByUserId(context.Context, *ListMomentByUserIdReq) (*ListMomentByUserIdResp, error)
 	RetrieveMoment(context.Context, *RetrieveMomentReq) (*RetrieveMomentResp, error)
 	CreateMoment(context.Context, *CreateMomentReq) (*CreateMomentResp, error)
 	UpdateMoment(context.Context, *UpdateMomentReq) (*UpdateMomentResp, error)
@@ -114,6 +125,9 @@ func (UnimplementedMomentRpcServer) SearchMoment(context.Context, *SearchMomentR
 }
 func (UnimplementedMomentRpcServer) ListMoment(context.Context, *ListMomentReq) (*ListMomentResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMoment not implemented")
+}
+func (UnimplementedMomentRpcServer) ListMomentByUserId(context.Context, *ListMomentByUserIdReq) (*ListMomentByUserIdResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMomentByUserId not implemented")
 }
 func (UnimplementedMomentRpcServer) RetrieveMoment(context.Context, *RetrieveMomentReq) (*RetrieveMomentResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RetrieveMoment not implemented")
@@ -172,6 +186,24 @@ func _MomentRpc_ListMoment_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MomentRpcServer).ListMoment(ctx, req.(*ListMomentReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MomentRpc_ListMomentByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMomentByUserIdReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MomentRpcServer).ListMomentByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/moment.moment_rpc/ListMomentByUserId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MomentRpcServer).ListMomentByUserId(ctx, req.(*ListMomentByUserIdReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -262,6 +294,10 @@ var MomentRpc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMoment",
 			Handler:    _MomentRpc_ListMoment_Handler,
+		},
+		{
+			MethodName: "ListMomentByUserId",
+			Handler:    _MomentRpc_ListMomentByUserId_Handler,
 		},
 		{
 			MethodName: "RetrieveMoment",

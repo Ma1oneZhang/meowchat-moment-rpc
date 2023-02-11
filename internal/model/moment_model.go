@@ -30,7 +30,8 @@ type (
 	// and implement the added methods in customMomentModel.
 	MomentModel interface {
 		momentModel
-		FindMany(ctx context.Context, id string, count, skip int64) ([]*Moment, int64, error)
+		FindManyByCommunityId(ctx context.Context, id string, count, skip int64) ([]*Moment, int64, error)
+		FindManyByUserId(ctx context.Context, id string, count, skip int64) ([]*Moment, int64, error)
 		Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, int64, error)
 	}
 
@@ -60,8 +61,8 @@ func NewMomentModel(url, db string, c cache.CacheConf, es config.ElasticsearchCo
 	}
 }
 
-func (m *customMomentModel) FindMany(ctx context.Context, communityId string, count, skip int64) ([]*Moment, int64, error) {
-	data := make([]*Moment, 0, 20)
+func (m *customMomentModel) FindManyByCommunityId(ctx context.Context, communityId string, count, skip int64) ([]*Moment, int64, error) {
+	data := make([]*Moment, 0)
 	opt := &options.FindOptions{
 		Skip:  &skip,
 		Limit: &count,
@@ -72,6 +73,24 @@ func (m *customMomentModel) FindMany(ctx context.Context, communityId string, co
 		return nil, 0, err
 	}
 	total, err := m.conn.CountDocuments(ctx, bson.M{"communityId": communityId})
+	if err != nil {
+		return nil, 0, err
+	}
+	return data, total, err
+}
+
+func (m *customMomentModel) FindManyByUserId(ctx context.Context, userId string, count, skip int64) ([]*Moment, int64, error) {
+	data := make([]*Moment, 0)
+	opt := &options.FindOptions{
+		Skip:  &skip,
+		Limit: &count,
+		Sort:  bson.M{"createAt": -1},
+	}
+	err := m.conn.Find(ctx, &data, bson.M{"userId": userId}, opt)
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err := m.conn.CountDocuments(ctx, bson.M{"userId": userId})
 	if err != nil {
 		return nil, 0, err
 	}
