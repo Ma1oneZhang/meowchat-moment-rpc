@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"github.com/xh-polaris/meowchat-moment-rpc/internal/config"
 	"github.com/zeromicro/go-zero/core/logx"
 	"log"
@@ -21,7 +22,6 @@ import (
 )
 
 const MomentCollectionName = "moment"
-const MomentIndexName = "meowchat_moment.moment-alias"
 
 var _ MomentModel = (*customMomentModel)(nil)
 
@@ -37,7 +37,8 @@ type (
 
 	customMomentModel struct {
 		*defaultMomentModel
-		es *elasticsearch.Client
+		es        *elasticsearch.Client
+		indexName string
 	}
 )
 
@@ -58,6 +59,7 @@ func NewMomentModel(url, db string, c cache.CacheConf, es config.ElasticsearchCo
 	return &customMomentModel{
 		defaultMomentModel: newDefaultMomentModel(conn),
 		es:                 esClient,
+		indexName:          fmt.Sprintf("%s.%s-alias", db, MomentCollectionName),
 	}
 }
 
@@ -134,7 +136,7 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 		return nil, 0, err
 	}
 	res, err := search(
-		search.WithIndex(MomentIndexName),
+		search.WithIndex(m.indexName),
 		search.WithContext(ctx),
 		search.WithBody(&buf),
 	)
