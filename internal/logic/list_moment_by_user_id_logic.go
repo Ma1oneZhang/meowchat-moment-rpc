@@ -23,7 +23,7 @@ func NewListMomentByUserIdLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-func (l *ListMomentByUserIdLogic) ListMomentByUserId(in *pb.ListMomentByUserIdReq) (*pb.ListMomentByUserIdResp, error) {
+func (l *ListMomentByUserIdLogic) ListMomentByUserId(in *pb.ListMomentByUserIdReq) (*pb.ListMomentResp, error) {
 	data, total, err := l.svcCtx.MomentModel.FindManyByUserId(l.ctx, in.UserId, in.Count, in.Skip)
 	if err != nil {
 		return nil, err
@@ -42,5 +42,5 @@ func (l *ListMomentByUserIdLogic) ListMomentByUserId(in *pb.ListMomentByUserIdRe
 		}
 		res = append(res, m)
 	}
-	return &pb.ListMomentByUserIdResp{Moments: res, Total: total}, nil
+	return &pb.ListMomentResp{Moments: res, Total: total}, nil
 }
