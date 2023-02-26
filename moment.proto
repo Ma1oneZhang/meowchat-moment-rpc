@@ -15,20 +15,28 @@ message Moment {
   string userId = 8;
 }
 
-message SearchMomentReq {
+message SearchMomentByCommunityIdReq {
   int64 count = 1;
   int64 skip = 2;
   string communityId = 3;
   string keyword = 4;
 }
 
-message SearchMomentResp {
-  repeated Moment moments = 1;
-  int64 total = 2;
+message SearchMomentByMultiCommunityIdReq {
+  int64 count = 1;
+  int64 skip = 2;
+  repeated string communityIds = 3;
+  string keyword = 4;
 }
 
-message ListMomentReq {
+message ListMomentByCommunityIdReq {
   string communityId = 1;
+  int64 count = 2; // 获取的数量
+  int64 skip = 3;
+}
+
+message ListMomentByMultiCommunityIdReq {
+  repeated string communityIds = 1;
   int64 count = 2; // 获取的数量
   int64 skip = 3;
 }
@@ -42,11 +50,6 @@ message ListMomentByUserIdReq {
   string userId = 1;
   int64 count = 2; // 获取的数量
   int64 skip = 3;
-}
-
-message ListMomentByUserIdResp {
-  repeated Moment moments = 1;
-  int64 total = 2;
 }
 
 message RetrieveMomentReq {
@@ -80,9 +83,11 @@ message DeleteMomentResp {
 }
 
 service moment_rpc {
-  rpc SearchMoment(SearchMomentReq) returns (SearchMomentResp);
-  rpc ListMoment(ListMomentReq) returns (ListMomentResp);
-  rpc ListMomentByUserId(ListMomentByUserIdReq) returns (ListMomentByUserIdResp);
+  rpc SearchMomentByCommunityId(SearchMomentByCommunityIdReq) returns (ListMomentResp);
+  rpc SearchMomentByMultiCommunityId(SearchMomentByMultiCommunityIdReq) returns (ListMomentResp);
+  rpc ListMomentByCommunityId(ListMomentByCommunityIdReq) returns (ListMomentResp);
+  rpc ListMomentByMultiCommunityId(ListMomentByMultiCommunityIdReq) returns (ListMomentResp);
+  rpc ListMomentByUserId(ListMomentByUserIdReq) returns (ListMomentResp);
   rpc RetrieveMoment(RetrieveMomentReq) returns (RetrieveMomentResp);
   rpc CreateMoment(CreateMomentReq) returns (CreateMomentResp);
   rpc UpdateMoment(UpdateMomentReq) returns (UpdateMomentResp);

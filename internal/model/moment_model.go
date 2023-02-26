@@ -30,9 +30,11 @@ type (
 	// and implement the added methods in customMomentModel.
 	MomentModel interface {
 		momentModel
-		FindManyByCommunityId(ctx context.Context, id string, count, skip int64) ([]*Moment, int64, error)
-		FindManyByUserId(ctx context.Context, id string, count, skip int64) ([]*Moment, int64, error)
-		Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, int64, error)
+		FindManyByCommunityId(ctx context.Context, communityId string, count, skip int64) ([]*Moment, int64, error)
+		FindManyByMultiCommunityId(ctx context.Context, communityIds []string, count, skip int64) ([]*Moment, int64, error)
+		FindManyByUserId(ctx context.Context, userId string, count, skip int64) ([]*Moment, int64, error)
+		SearchByCommunityId(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, int64, error)
+		SearchByMultiCommunityId(ctx context.Context, communityIds []string, keyword string, count, skip int64) ([]*Moment, int64, error)
 	}
 
 	customMomentModel struct {
@@ -68,13 +70,31 @@ func (m *customMomentModel) FindManyByCommunityId(ctx context.Context, community
 	opt := &options.FindOptions{
 		Skip:  &skip,
 		Limit: &count,
-		Sort:  bson.M{"createAt": -1},
+		Sort:  bson.M{CreateAt: -1},
 	}
-	err := m.conn.Find(ctx, &data, bson.M{"communityId": communityId}, opt)
+	err := m.conn.Find(ctx, &data, bson.M{CommunityId: communityId}, opt)
 	if err != nil {
 		return nil, 0, err
 	}
-	total, err := m.conn.CountDocuments(ctx, bson.M{"communityId": communityId})
+	total, err := m.conn.CountDocuments(ctx, bson.M{CommunityId: communityId})
+	if err != nil {
+		return nil, 0, err
+	}
+	return data, total, err
+}
+
+func (m *customMomentModel) FindManyByMultiCommunityId(ctx context.Context, communityIds []string, count, skip int64) ([]*Moment, int64, error) {
+	data := make([]*Moment, 0)
+	opt := &options.FindOptions{
+		Skip:  &skip,
+		Limit: &count,
+		Sort:  bson.M{CreateAt: -1},
+	}
+	err := m.conn.Find(ctx, &data, bson.M{CommunityId: bson.M{"$in": communityIds}}, opt)
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err := m.conn.CountDocuments(ctx, bson.M{CommunityId: bson.M{"$in": communityIds}})
 	if err != nil {
 		return nil, 0, err
 	}
@@ -86,20 +106,20 @@ func (m *customMomentModel) FindManyByUserId(ctx context.Context, userId string,
 	opt := &options.FindOptions{
 		Skip:  &skip,
 		Limit: &count,
-		Sort:  bson.M{"createAt": -1},
+		Sort:  bson.M{CreateAt: -1},
 	}
-	err := m.conn.Find(ctx, &data, bson.M{"userId": userId}, opt)
+	err := m.conn.Find(ctx, &data, bson.M{UserId: userId}, opt)
 	if err != nil {
 		return nil, 0, err
 	}
-	total, err := m.conn.CountDocuments(ctx, bson.M{"userId": userId})
+	total, err := m.conn.CountDocuments(ctx, bson.M{UserId: userId})
 	if err != nil {
 		return nil, 0, err
 	}
 	return data, total, err
 }
 
-func (m *customMomentModel) Search(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, int64, error) {
+func (m *customMomentModel) SearchByCommunityId(ctx context.Context, communityId, keyword string, count, skip int64) ([]*Moment, int64, error) {
 	search := m.es.Search
 	query := map[string]any{
 		"from": skip,
@@ -109,13 +129,13 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 				"must": []any{
 					map[string]any{
 						"term": map[string]any{
-							"communityId": communityId,
+							CommunityId: communityId,
 						},
 					},
 					map[string]any{
 						"multi_match": map[string]any{
 							"query":  keyword,
-							"fields": []string{"title", "text"},
+							"fields": []string{Text, Title + "^3"},
 						},
 					},
 				},
@@ -125,7 +145,7 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 			"_score": map[string]any{
 				"order": "desc",
 			},
-			"createAt": map[string]any{
+			CreateAt: map[string]any{
 				"order": "desc",
 			},
 		},
@@ -168,10 +188,10 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 		hit := hits[i].(map[string]any)
 		moment := &Moment{}
 		source := hit["_source"].(map[string]any)
-		if source["createAt"], err = time.Parse("2006-01-02T15:04:05Z07:00", source["createAt"].(string)); err != nil {
+		if source[CreateAt], err = time.Parse("2006-01-02T15:04:05Z07:00", source[CreateAt].(string)); err != nil {
 			return nil, 0, err
 		}
-		if source["updateAt"], err = time.Parse("2006-01-02T15:04:05Z07:00", source["updateAt"].(string)); err != nil {
+		if source[UpdateAt], err = time.Parse("2006-01-02T15:04:05Z07:00", source[UpdateAt].(string)); err != nil {
 			return nil, 0, err
 		}
 		hit["_source"] = source
@@ -179,7 +199,98 @@ func (m *customMomentModel) Search(ctx context.Context, communityId, keyword str
 		if err != nil {
 			return nil, 0, err
 		}
-		oid := hit["_id"].(string)
+		oid := hit[ID].(string)
+		id, err := primitive.ObjectIDFromHex(oid)
+		if err != nil {
+			return nil, 0, err
+		}
+		moment.ID = id
+		moments = append(moments, moment)
+	}
+	return moments, total, nil
+}
+
+func (m *customMomentModel) SearchByMultiCommunityId(ctx context.Context, communityIds []string, keyword string, count, skip int64) ([]*Moment, int64, error) {
+	search := m.es.Search
+	query := map[string]any{
+		"from": skip,
+		"size": count,
+		"query": map[string]any{
+			"bool": map[string]any{
+				"must": []any{
+					map[string]any{
+						"terms": map[string]any{
+							CommunityId: communityIds,
+						},
+					},
+					map[string]any{
+						"multi_match": map[string]any{
+							"query":  keyword,
+							"fields": []string{Text, Title + "^3"},
+						},
+					},
+				},
+			},
+		},
+		"sort": map[string]any{
+			"_score": map[string]any{
+				"order": "desc",
+			},
+			CreateAt: map[string]any{
+				"order": "desc",
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		return nil, 0, err
+	}
+	res, err := search(
+		search.WithIndex(m.indexName),
+		search.WithContext(ctx),
+		search.WithBody(&buf),
+	)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		var e map[string]interface{}
+		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
+			return nil, 0, err
+		} else {
+			logx.Errorf("[%s] %s: %s",
+				res.Status(),
+				e["error"].(map[string]interface{})["type"],
+				e["error"].(map[string]interface{})["reason"],
+			)
+		}
+	}
+	var r map[string]any
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		return nil, 0, err
+	}
+	hits := r["hits"].(map[string]any)["hits"].([]any)
+	total := int64(r["hits"].(map[string]any)["total"].(map[string]any)["value"].(float64))
+	moments := make([]*Moment, 0, 10)
+	for i := range hits {
+		hit := hits[i].(map[string]any)
+		moment := &Moment{}
+		source := hit["_source"].(map[string]any)
+		if source[CreateAt], err = time.Parse("2006-01-02T15:04:05Z07:00", source[CreateAt].(string)); err != nil {
+			return nil, 0, err
+		}
+		if source[UpdateAt], err = time.Parse("2006-01-02T15:04:05Z07:00", source[UpdateAt].(string)); err != nil {
+			return nil, 0, err
+		}
+		hit["_source"] = source
+		err := mapstructure.Decode(hit["_source"], moment)
+		if err != nil {
+			return nil, 0, err
+		}
+		oid := hit[ID].(string)
 		id, err := primitive.ObjectIDFromHex(oid)
 		if err != nil {
 			return nil, 0, err

@@ -9,27 +9,27 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type SearchMomentLogic struct {
+type SearchMomentByCommunityIdLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewSearchMomentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SearchMomentLogic {
-	return &SearchMomentLogic{
+func NewSearchMomentByCommunityIdLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SearchMomentByCommunityIdLogic {
+	return &SearchMomentByCommunityIdLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-func (l *SearchMomentLogic) SearchMoment(in *pb.SearchMomentReq) (*pb.SearchMomentResp, error) {
-	data, total, err := l.svcCtx.MomentModel.Search(l.ctx, in.CommunityId, in.Keyword, in.Count, in.Skip)
+func (l *SearchMomentByCommunityIdLogic) SearchMomentByCommunityId(in *pb.SearchMomentByCommunityIdReq) (*pb.ListMomentResp, error) {
+	data, total, err := l.svcCtx.MomentModel.SearchByCommunityId(l.ctx, in.CommunityId, in.Keyword, in.Count, in.Skip)
 	if err != nil {
 		return nil, err
 	}
-	res := make([]*pb.Moment, 0, 10)
-	for _, d := range data {
+	res := make([]*pb.Moment, 0, in.Count)
+	for i, d := range data {
 		m := &pb.Moment{
 			Id:          d.ID.Hex(),
 			CreateAt:    d.CreateAt.Unix(),
@@ -40,7 +40,7 @@ func (l *SearchMomentLogic) SearchMoment(in *pb.SearchMomentReq) (*pb.SearchMome
 			CommunityId: d.CommunityId,
 			CatId:       d.CatId,
 		}
-		res = append(res, m)
+		res[i] = m
 	}
-	return &pb.SearchMomentResp{Moments: res, Total: total}, nil
+	return &pb.ListMomentResp{Moments: res, Total: total}, nil
 }

@@ -13,26 +13,28 @@ import (
 )
 
 type (
-	CreateMomentReq        = pb.CreateMomentReq
-	CreateMomentResp       = pb.CreateMomentResp
-	DeleteMomentReq        = pb.DeleteMomentReq
-	DeleteMomentResp       = pb.DeleteMomentResp
-	ListMomentByUserIdReq  = pb.ListMomentByUserIdReq
-	ListMomentByUserIdResp = pb.ListMomentByUserIdResp
-	ListMomentReq          = pb.ListMomentReq
-	ListMomentResp         = pb.ListMomentResp
-	Moment                 = pb.Moment
-	RetrieveMomentReq      = pb.RetrieveMomentReq
-	RetrieveMomentResp     = pb.RetrieveMomentResp
-	SearchMomentReq        = pb.SearchMomentReq
-	SearchMomentResp       = pb.SearchMomentResp
-	UpdateMomentReq        = pb.UpdateMomentReq
-	UpdateMomentResp       = pb.UpdateMomentResp
+	CreateMomentReq                   = pb.CreateMomentReq
+	CreateMomentResp                  = pb.CreateMomentResp
+	DeleteMomentReq                   = pb.DeleteMomentReq
+	DeleteMomentResp                  = pb.DeleteMomentResp
+	ListMomentByCommunityIdReq        = pb.ListMomentByCommunityIdReq
+	ListMomentByMultiCommunityIdReq   = pb.ListMomentByMultiCommunityIdReq
+	ListMomentByUserIdReq             = pb.ListMomentByUserIdReq
+	ListMomentResp                    = pb.ListMomentResp
+	Moment                            = pb.Moment
+	RetrieveMomentReq                 = pb.RetrieveMomentReq
+	RetrieveMomentResp                = pb.RetrieveMomentResp
+	SearchMomentByCommunityIdReq      = pb.SearchMomentByCommunityIdReq
+	SearchMomentByMultiCommunityIdReq = pb.SearchMomentByMultiCommunityIdReq
+	UpdateMomentReq                   = pb.UpdateMomentReq
+	UpdateMomentResp                  = pb.UpdateMomentResp
 
 	MomentRpc interface {
-		SearchMoment(ctx context.Context, in *SearchMomentReq, opts ...grpc.CallOption) (*SearchMomentResp, error)
-		ListMoment(ctx context.Context, in *ListMomentReq, opts ...grpc.CallOption) (*ListMomentResp, error)
-		ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentByUserIdResp, error)
+		SearchMomentByCommunityId(ctx context.Context, in *SearchMomentByCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error)
+		SearchMomentByMultiCommunityId(ctx context.Context, in *SearchMomentByMultiCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error)
+		ListMomentByCommunityId(ctx context.Context, in *ListMomentByCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error)
+		ListMomentByMultiCommunityId(ctx context.Context, in *ListMomentByMultiCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error)
+		ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentResp, error)
 		RetrieveMoment(ctx context.Context, in *RetrieveMomentReq, opts ...grpc.CallOption) (*RetrieveMomentResp, error)
 		CreateMoment(ctx context.Context, in *CreateMomentReq, opts ...grpc.CallOption) (*CreateMomentResp, error)
 		UpdateMoment(ctx context.Context, in *UpdateMomentReq, opts ...grpc.CallOption) (*UpdateMomentResp, error)
@@ -50,17 +52,27 @@ func NewMomentRpc(cli zrpc.Client) MomentRpc {
 	}
 }
 
-func (m *defaultMomentRpc) SearchMoment(ctx context.Context, in *SearchMomentReq, opts ...grpc.CallOption) (*SearchMomentResp, error) {
+func (m *defaultMomentRpc) SearchMomentByCommunityId(ctx context.Context, in *SearchMomentByCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
 	client := pb.NewMomentRpcClient(m.cli.Conn())
-	return client.SearchMoment(ctx, in, opts...)
+	return client.SearchMomentByCommunityId(ctx, in, opts...)
 }
 
-func (m *defaultMomentRpc) ListMoment(ctx context.Context, in *ListMomentReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
+func (m *defaultMomentRpc) SearchMomentByMultiCommunityId(ctx context.Context, in *SearchMomentByMultiCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
 	client := pb.NewMomentRpcClient(m.cli.Conn())
-	return client.ListMoment(ctx, in, opts...)
+	return client.SearchMomentByMultiCommunityId(ctx, in, opts...)
 }
 
-func (m *defaultMomentRpc) ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentByUserIdResp, error) {
+func (m *defaultMomentRpc) ListMomentByCommunityId(ctx context.Context, in *ListMomentByCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
+	client := pb.NewMomentRpcClient(m.cli.Conn())
+	return client.ListMomentByCommunityId(ctx, in, opts...)
+}
+
+func (m *defaultMomentRpc) ListMomentByMultiCommunityId(ctx context.Context, in *ListMomentByMultiCommunityIdReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
+	client := pb.NewMomentRpcClient(m.cli.Conn())
+	return client.ListMomentByMultiCommunityId(ctx, in, opts...)
+}
+
+func (m *defaultMomentRpc) ListMomentByUserId(ctx context.Context, in *ListMomentByUserIdReq, opts ...grpc.CallOption) (*ListMomentResp, error) {
 	client := pb.NewMomentRpcClient(m.cli.Conn())
 	return client.ListMomentByUserId(ctx, in, opts...)
 }

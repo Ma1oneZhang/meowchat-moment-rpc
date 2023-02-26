@@ -14,7 +14,6 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 COPY . .
-COPY ./etc /app/etc
 RUN go build -ldflags="-s -w" -o /app/moment-rpc .
 
 
@@ -26,6 +25,5 @@ ENV TZ Asia/Shanghai
 
 WORKDIR /app
 COPY --from=builder /app/moment-rpc /app/moment-rpc
-COPY --from=builder /app/etc /app/etc
 
 CMD ["./moment-rpc", "-f", "etc/moment.yaml"]

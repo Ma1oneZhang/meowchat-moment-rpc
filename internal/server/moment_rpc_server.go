@@ -22,17 +22,27 @@ func NewMomentRpcServer(svcCtx *svc.ServiceContext) *MomentRpcServer {
 	}
 }
 
-func (s *MomentRpcServer) SearchMoment(ctx context.Context, in *pb.SearchMomentReq) (*pb.SearchMomentResp, error) {
-	l := logic.NewSearchMomentLogic(ctx, s.svcCtx)
-	return l.SearchMoment(in)
+func (s *MomentRpcServer) SearchMomentByCommunityId(ctx context.Context, in *pb.SearchMomentByCommunityIdReq) (*pb.ListMomentResp, error) {
+	l := logic.NewSearchMomentByCommunityIdLogic(ctx, s.svcCtx)
+	return l.SearchMomentByCommunityId(in)
 }
 
-func (s *MomentRpcServer) ListMoment(ctx context.Context, in *pb.ListMomentReq) (*pb.ListMomentResp, error) {
-	l := logic.NewListMomentLogic(ctx, s.svcCtx)
-	return l.ListMoment(in)
+func (s *MomentRpcServer) SearchMomentByMultiCommunityId(ctx context.Context, in *pb.SearchMomentByMultiCommunityIdReq) (*pb.ListMomentResp, error) {
+	l := logic.NewSearchMomentByMultiCommunityIdLogic(ctx, s.svcCtx)
+	return l.SearchMomentByMultiCommunityId(in)
 }
 
-func (s *MomentRpcServer) ListMomentByUserId(ctx context.Context, in *pb.ListMomentByUserIdReq) (*pb.ListMomentByUserIdResp, error) {
+func (s *MomentRpcServer) ListMomentByCommunityId(ctx context.Context, in *pb.ListMomentByCommunityIdReq) (*pb.ListMomentResp, error) {
+	l := logic.NewListMomentByCommunityIdLogic(ctx, s.svcCtx)
+	return l.ListMomentByCommunityId(in)
+}
+
+func (s *MomentRpcServer) ListMomentByMultiCommunityId(ctx context.Context, in *pb.ListMomentByMultiCommunityIdReq) (*pb.ListMomentResp, error) {
+	l := logic.NewListMomentByMultiCommunityIdLogic(ctx, s.svcCtx)
+	return l.ListMomentByMultiCommunityId(in)
+}
+
+func (s *MomentRpcServer) ListMomentByUserId(ctx context.Context, in *pb.ListMomentByUserIdReq) (*pb.ListMomentResp, error) {
 	l := logic.NewListMomentByUserIdLogic(ctx, s.svcCtx)
 	return l.ListMomentByUserId(in)
 }

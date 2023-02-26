@@ -17,3 +17,15 @@ type Moment struct {
 	UpdateAt    time.Time          `bson:"updateAt,omitempty" json:"updateAt,omitempty"`
 	CreateAt    time.Time          `bson:"createAt,omitempty" json:"createAt,omitempty"`
 }
+
+const (
+	ID          = "_id"
+	CatId       = "catId"
+	CommunityId = "communityId"
+	Photos      = "photos"
+	Title       = "title"
+	Text        = "text"
+	UserId      = "userId"
+	UpdateAt    = "updateAt"
+	CreateAt    = "createAt"
+)
