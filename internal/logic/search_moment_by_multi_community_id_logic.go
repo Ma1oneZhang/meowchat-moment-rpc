@@ -28,7 +28,7 @@ func (l *SearchMomentByMultiCommunityIdLogic) SearchMomentByMultiCommunityId(in 
 	if err != nil {
 		return nil, err
 	}
-	res := make([]*pb.Moment, 0, in.Count)
+	res := make([]*pb.Moment, in.Count)
 	for i, d := range data {
 		m := &pb.Moment{
 			Id:          d.ID.Hex(),

@@ -28,8 +28,8 @@ func (l *ListMomentByUserIdLogic) ListMomentByUserId(in *pb.ListMomentByUserIdRe
 	if err != nil {
 		return nil, err
 	}
-	res := make([]*pb.Moment, 0)
-	for _, d := range data {
+	res := make([]*pb.Moment, in.Count)
+	for i, d := range data {
 		m := &pb.Moment{
 			Id:          d.ID.Hex(),
 			CreateAt:    d.CreateAt.Unix(),
@@ -40,7 +40,7 @@ func (l *ListMomentByUserIdLogic) ListMomentByUserId(in *pb.ListMomentByUserIdRe
 			CommunityId: d.CommunityId,
 			CatId:       d.CatId,
 		}
-		res = append(res, m)
+		res[i] = m
 	}
 	return &pb.ListMomentResp{Moments: res, Total: total}, nil
 }
