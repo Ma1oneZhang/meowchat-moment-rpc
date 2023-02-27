@@ -28,19 +28,6 @@ func (l *ListMomentByMultiCommunityIdLogic) ListMomentByMultiCommunityId(in *pb.
 	if err != nil {
 		return nil, err
 	}
-	res := make([]*pb.Moment, 0, in.Count)
-	for _, d := range data {
-		m := &pb.Moment{
-			Id:          d.ID.Hex(),
-			CreateAt:    d.CreateAt.Unix(),
-			Photos:      d.Photos,
-			Title:       d.Title,
-			Text:        d.Text,
-			UserId:      d.UserId,
-			CommunityId: d.CommunityId,
-			CatId:       d.CatId,
-		}
-		res = append(res, m)
-	}
+	res := transformMomentSlice(data)
 	return &pb.ListMomentResp{Moments: res, Total: total}, nil
 }

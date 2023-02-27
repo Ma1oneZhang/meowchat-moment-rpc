@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"github.com/xh-polaris/meowchat-moment-rpc/internal/model"
 
 	"github.com/xh-polaris/meowchat-moment-rpc/internal/svc"
 	"github.com/xh-polaris/meowchat-moment-rpc/pb"
@@ -23,13 +24,9 @@ func NewListMomentByCommunityIdLogic(ctx context.Context, svcCtx *svc.ServiceCon
 	}
 }
 
-func (l *ListMomentByCommunityIdLogic) ListMomentByCommunityId(in *pb.ListMomentByCommunityIdReq) (*pb.ListMomentResp, error) {
-	data, total, err := l.svcCtx.MomentModel.FindManyByCommunityId(l.ctx, in.CommunityId, in.Count, in.Skip)
-	if err != nil {
-		return nil, err
-	}
-	res := make([]*pb.Moment, 0, in.Count)
-	for _, d := range data {
+func transformMomentSlice(data []*model.Moment) []*pb.Moment {
+	res := make([]*pb.Moment, len(data))
+	for i, d := range data {
 		m := &pb.Moment{
 			Id:          d.ID.Hex(),
 			CreateAt:    d.CreateAt.Unix(),
@@ -40,7 +37,16 @@ func (l *ListMomentByCommunityIdLogic) ListMomentByCommunityId(in *pb.ListMoment
 			CommunityId: d.CommunityId,
 			CatId:       d.CatId,
 		}
-		res = append(res, m)
+		res[i] = m
 	}
+	return res
+}
+
+func (l *ListMomentByCommunityIdLogic) ListMomentByCommunityId(in *pb.ListMomentByCommunityIdReq) (*pb.ListMomentResp, error) {
+	data, total, err := l.svcCtx.MomentModel.FindManyByCommunityId(l.ctx, in.CommunityId, in.Count, in.Skip)
+	if err != nil {
+		return nil, err
+	}
+	res := transformMomentSlice(data)
 	return &pb.ListMomentResp{Moments: res, Total: total}, nil
 }
