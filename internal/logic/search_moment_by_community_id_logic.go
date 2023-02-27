@@ -28,8 +28,8 @@ func (l *SearchMomentByCommunityIdLogic) SearchMomentByCommunityId(in *pb.Search
 	if err != nil {
 		return nil, err
 	}
-	res := make([]*pb.Moment, in.Count)
-	for i, d := range data {
+	res := make([]*pb.Moment, 0, in.Count)
+	for _, d := range data {
 		m := &pb.Moment{
 			Id:          d.ID.Hex(),
 			CreateAt:    d.CreateAt.Unix(),
@@ -40,7 +40,7 @@ func (l *SearchMomentByCommunityIdLogic) SearchMomentByCommunityId(in *pb.Search
 			CommunityId: d.CommunityId,
 			CatId:       d.CatId,
 		}
-		res[i] = m
+		res = append(res, m)
 	}
 	return &pb.ListMomentResp{Moments: res, Total: total}, nil
 }
