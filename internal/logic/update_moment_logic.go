@@ -41,7 +41,7 @@ func (l *UpdateMomentLogic) UpdateMoment(in *pb.UpdateMomentReq) (*pb.UpdateMome
 		UserId:      m.UserId,
 	})
 	// 将未使用图片加入等待集合中
-	addUnExistUrlToUsedUrl(&l.svcCtx.Config.Redis, m.Photos)
+	removeUsedUrls(&l.svcCtx.Config.Redis, m.Photos)
 	if err != nil {
 		return nil, err
 	}

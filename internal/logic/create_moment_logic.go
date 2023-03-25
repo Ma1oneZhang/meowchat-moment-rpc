@@ -37,6 +37,6 @@ func (l *CreateMomentLogic) CreateMoment(in *pb.CreateMomentReq) (*pb.CreateMome
 		return nil, err
 	}
 	// 将使用图片加入已使用url中
-	addUrlsToUsedUrl(&l.svcCtx.Config.Redis, data.Photos)
+	removeUsedUrls(&l.svcCtx.Config.Redis, data.Photos)
 	return &pb.CreateMomentResp{MomentId: data.ID.Hex()}, nil
 }

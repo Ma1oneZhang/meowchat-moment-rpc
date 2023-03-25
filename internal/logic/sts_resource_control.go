@@ -13,7 +13,6 @@ var (
 
 const (
 	delayQueue = "sts:dq:timeOutObjectUrl"
-	usedUrl    = "sts:store:usedUrl"
 )
 
 // checkSingletonRedis singleton redis pattern
@@ -27,23 +26,11 @@ func checkSingletonRedis(redisConf *redis.RedisConf) {
 	}
 }
 
-// addUrlsToUsedUrl 对于string数组使用
-func addUrlsToUsedUrl(redisConf *redis.RedisConf, urls []string) {
+// removeUsedUrls 对于string数组使用
+func removeUsedUrls(redisConf *redis.RedisConf, urls []string) {
 	checkSingletonRedis(redisConf)
 	for _, val := range urls {
 		nUrl, _ := url.Parse(val)
-		_, _ = cli.Sadd(usedUrl, nUrl.Path)
-	}
-}
-
-// addUnExistUrlToUsedUrl 当更新某项url才使用，较为耗费IO
-func addUnExistUrlToUsedUrl(redisConf *redis.RedisConf, urls []string) {
-	checkSingletonRedis(redisConf)
-	for _, val := range urls {
-		pUrl, _ := url.Parse(val)
-		_, err := cli.Zrank(delayQueue, pUrl.Path)
-		if err == nil {
-			_, _ = cli.Sadd(usedUrl, pUrl.Path)
-		}
+		_, _ = cli.Zrem(delayQueue, nUrl.Path)
 	}
 }
