@@ -32,11 +32,11 @@ func (l *CreateMomentLogic) CreateMoment(in *pb.CreateMomentReq) (*pb.CreateMome
 		UserId:      m.UserId,
 		CatId:       m.CatId,
 	}
-
 	err := l.svcCtx.MomentModel.Insert(l.ctx, data)
 	if err != nil {
 		return nil, err
 	}
-
+	// 将使用图片加入已使用url中
+	addUrlsToUsedUrl(&l.svcCtx.Config.Redis, data.Photos)
 	return &pb.CreateMomentResp{MomentId: data.ID.Hex()}, nil
 }
