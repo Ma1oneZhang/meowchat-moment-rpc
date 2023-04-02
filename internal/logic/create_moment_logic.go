@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"github.com/xh-polaris/meowchat-moment-rpc/internal/model"
+	"github.com/xh-polaris/meowchat-moment-rpc/internal/scheduled"
 	"github.com/xh-polaris/meowchat-moment-rpc/internal/svc"
 	"github.com/xh-polaris/meowchat-moment-rpc/pb"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -36,7 +37,6 @@ func (l *CreateMomentLogic) CreateMoment(in *pb.CreateMomentReq) (*pb.CreateMome
 	if err != nil {
 		return nil, err
 	}
-	// 将使用图片加入已使用url中
-	removeUsedUrls(&l.svcCtx.Config.Redis, data.Photos)
+	go scheduled.SendUrlUsedMessageToSts(&l.svcCtx.Config, &m.Photos)
 	return &pb.CreateMomentResp{MomentId: data.ID.Hex()}, nil
 }

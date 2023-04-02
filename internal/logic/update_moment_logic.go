@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/xh-polaris/meowchat-moment-rpc/errorx"
 	"github.com/xh-polaris/meowchat-moment-rpc/internal/model"
+	"github.com/xh-polaris/meowchat-moment-rpc/internal/scheduled"
 	"github.com/xh-polaris/meowchat-moment-rpc/internal/svc"
 	"github.com/xh-polaris/meowchat-moment-rpc/pb"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -40,11 +41,9 @@ func (l *UpdateMomentLogic) UpdateMoment(in *pb.UpdateMomentReq) (*pb.UpdateMome
 		Text:        m.Text,
 		UserId:      m.UserId,
 	})
-	// 将未使用图片加入等待集合中
-	removeUsedUrls(&l.svcCtx.Config.Redis, m.Photos)
 	if err != nil {
 		return nil, err
 	}
-
+	go scheduled.SendUrlUsedMessageToSts(&l.svcCtx.Config, &m.Photos)
 	return &pb.UpdateMomentResp{}, nil
 }
